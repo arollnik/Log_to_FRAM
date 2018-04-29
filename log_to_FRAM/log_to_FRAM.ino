@@ -20,7 +20,7 @@ struct {
   } FRAM_storage;
 
 #define WAIT_MINUTES 10
-#define FRAM_SIZE 32768
+#define FRAM_SIZE 32768  // 32k Device
   
 void setup(void) {
   Serial.begin(9600);
@@ -63,8 +63,10 @@ void setup(void) {
    Serial.print(WAIT_MINUTES);
    Serial.println(" Minutes.");
 };
-/** resets FRAM structure
- *  put pointer in FRAM to start position 
+/** 
+ *  resets FRAM structure
+ *  put pointer in FRAM to start position. 
+ *  shall not be regularily used, if you want tocontinuously store values
  */
 void FRAM_reset()  {
       FRAM_storage.last_pos = 4;
@@ -75,6 +77,11 @@ void FRAM_reset()  {
       fram.write8(0x03, (FRAM_storage.start_pos&0x00ff));
       Serial.println("\nFRAM Disk initialised!");
 }
+/*
+ * checks, if  the next store into the FRAM buffer space of
+ * n-values with length of m-bytes still fits within the linear 
+ * storeage space
+ */
 void FRAM_check(int n, int m) {
   if(FRAM_storage.last_pos+(n*m)>FRAM_SIZE) {
     FRAM_storage.start_pos = 0;    
@@ -129,7 +136,9 @@ int FRAM_append4(uint32_t a) {
   fram.write8(0x03, (FRAM_storage.start_pos&0x00ff));
   return(flag);
 };
-
+/*
+ * dump the entire memory of the FRAM device to the serial device
+ */
 void FRAM_dump_memory(void) {
   uint8_t value;
   for (uint16_t a=4; a<FRAM_storage.last_pos; a++) {
